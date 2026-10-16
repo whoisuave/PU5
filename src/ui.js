@@ -9,6 +9,7 @@
   let staged = []; // card ids in play order
   let cpuTimer = null;
   let cpuDelay = 850;
+  let queenWarned = null; // staged run the player was warned about
 
   // ---------- rendering ----------
 
@@ -133,9 +134,10 @@
     const check = PU5.validatePlay(state, HUMAN, cards);
     if (!check.ok) return say(check.reason);
     const last = cards[cards.length - 1];
-    if (last.rank === PU5.QUEEN &&
-        !confirm(`Your ${PU5.cardLabel(last)} isn't covered, so you'll pick up ${state.config.queenPenalty}. Play anyway?`)) {
-      return;
+    const key = staged.join(',');
+    if (last.rank === PU5.QUEEN && queenWarned !== key) {
+      queenWarned = key;
+      return say(`Your ${PU5.cardLabel(last)} isn't covered, so you'll pick up ${state.config.queenPenalty}. Press Play again to play it anyway.`);
     }
     if (last.rank === PU5.ACE) return openSuitPicker();
     commitPlay();
@@ -218,9 +220,10 @@
     try {
       state = PU5.createGame(players, config);
     } catch (e) {
-      alert(e.message);
+      $('setupError').textContent = `${e.message}. Use fewer players, a smaller hand or 2 decks.`;
       return;
     }
+    $('setupError').textContent = '';
     staged = [];
     $('setup').classList.add('hidden');
     $('table').classList.remove('hidden');

@@ -12,7 +12,7 @@ Open `index.html` in any browser. No install or server is needed.
 - **Hint** stages the move the CPU would make for you.
 - Cards you can legally play next have a gold outline.
 
-Run `npm run build` to make `dist/pu5.html`, a single file that holds the whole game, for sharing.
+Run `npm run build` to make `dist/pu5.html`, a single file that holds the whole game, for sharing. `node scripts/build-single.js --artifact` writes the same game without the page wrapper, for hosts that add their own.
 
 ## Rules
 

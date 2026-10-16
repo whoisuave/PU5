@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PU5 — Pick Up 5</title>
+  <title>PU5 Pick Up 5</title>
+  <meta name="claude:viewport-fit-sides" content="cover">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -32,6 +33,7 @@
       <select id="speedInput"><option value="1400">Slow</option><option value="850" selected>Normal</option><option value="350">Fast</option></select>
     </label>
     <label class="check"><input type="checkbox" id="sameRankInput"> Allow same number in a run (e.g. 4♠ 4♥)</label>
+    <p id="setupError" class="error" role="alert"></p>
     <button id="startBtn" class="primary">Deal</button>
   </section>
 
