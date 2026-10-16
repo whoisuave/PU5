@@ -42,12 +42,21 @@ test('must match suit or number', () => {
 });
 
 test('runs go up/down in order and may change direction (4,5,4)', () => {
-  const s = table({ hands: [['4S', '5H', '4D', '9C', '6C'], ['4C'], ['4C1']], top: '4C2' });
-  assert.equal(PU5.validatePlay(s, 0, ['4S', '5H', '4D'].map(c)).ok, true);
-  assert.equal(PU5.validatePlay(s, 0, ['4S', '5H', '6C'].map(c)).ok, true);
+  const s = table({ hands: [['4S', '5S', '4S1', '9C', '6S', '4D'], ['4C'], ['4C1']], top: '4C2', config: { numDecks: 2 } });
+  assert.equal(PU5.validatePlay(s, 0, ['4S', '5S', '4S1'].map(c)).ok, true);
+  assert.equal(PU5.validatePlay(s, 0, ['4S', '5S', '6S'].map(c)).ok, true);
   assert.equal(PU5.validatePlay(s, 0, ['4S', '9C'].map(c)).ok, false);
+  assert.equal(PU5.validatePlay(s, 0, ['4D', '5S'].map(c)).ok, false);
   s.config.sameRankRuns = false;
   assert.equal(PU5.validatePlay(s, 0, ['4S', '4D'].map(c)).ok, false);
+});
+
+test('each step must share suit or number with the card before it', () => {
+  const s = table({ hands: [['8H', '9C', '9H', '9D', '10D', '7H'], ['4C'], ['4H']], top: '8D' });
+  assert.equal(PU5.validatePlay(s, 0, ['8H', '9C'].map(c)).ok, false); // different suit and number
+  assert.equal(PU5.validatePlay(s, 0, ['8H', '9H', '9C'].map(c)).ok, true);
+  assert.equal(PU5.validatePlay(s, 0, ['8H', '9H', '9D', '10D'].map(c)).ok, true);
+  assert.equal(PU5.validatePlay(s, 0, ['8H', '7H'].map(c)).ok, true);
 });
 
 test('same number in any suit continues a run (5♦ 5♠ 5♣ 6♣)', () => {
@@ -68,7 +77,7 @@ test('ace can be played any time and changes the suit', () => {
 
 test('ace can end any run', () => {
   const s = table({ hands: [['5S', '6S', 'AH', '9D'], ['4C'], ['4C1']], top: '5C' });
-  assert.equal(PU5.validatePlay(s, 0, ['5S', '6S', 'AH'].map(c)).ok, true);
+  assert.equal(PU5.validatePlay(s, 0, ['5S', '6S', 'AH'].map(c)).ok, true); // A ends any run
   assert.equal(PU5.validatePlay(s, 0, ['5S', 'AH', '9D'].map(c)).ok, false);
 });
 
@@ -105,23 +114,25 @@ test('standard mode: only a red Jack cancels, so combos are rejected', () => {
   s.activeSuit = 'H';
   assert.equal(PU5.validatePlay(s, 1, ['2H', '3H'].map(c)).ok, false);
   assert.equal(PU5.validatePlay(s, 1, ['JH', '10H'].map(c)).ok, false);
-  assert.equal(PU5.validatePlay(s, 1, ['2H', '3H', '2C'].map(c)).ok, true); // still ends hot
+  assert.equal(PU5.validatePlay(s, 1, ['2H', '3H', '2C'].map(c)).ok, false); // 3♥ → 2♣ shares nothing
+  assert.equal(PU5.validatePlay(s, 1, ['2C', '2H'].map(c)).ok, true); // still ends hot
   assert.equal(PU5.validatePlay(s, 1, [c('JH')]).ok, true);
   assert.ok(PU5.legalPlays(s, 1).every((run) => ['2H', '2C', 'JH'].includes(run[run.length - 1].id)));
 });
 
 test('All Saints II: red J + 10 combo cancels', () => {
-  const s = table({ hands: [['2H', '9D'], ['JH', '10S', '5D'], ['4H']], top: '5H', config: { comboCancel: true } });
+  const s = table({ hands: [['2H', '9D'], ['JH', '10H', '10S', '5D'], ['4H']], top: '5H', config: { comboCancel: true } });
   play(s, 0, ['2H']);
-  assert.equal(play(s, 1, ['JH', '10S']).ok, true);
+  assert.equal(PU5.validatePlay(s, 1, ['JH', '10S'].map(c)).ok, false);
+  assert.equal(play(s, 1, ['JH', '10H', '10S']).ok, true);
   assert.equal(s.pending, 0);
   assert.equal(s.activeSuit, 'S');
 });
 
 test('All Saints II: black J, Q, cover combo cancels', () => {
-  const s = table({ hands: [['2S', '9D'], ['JS', 'QD', '4D', '8C'], ['4H']], top: '5S', config: { comboCancel: true } });
+  const s = table({ hands: [['2S', '9D'], ['JS', 'QS', '4S', '8C'], ['4H']], top: '5S', config: { comboCancel: true } });
   play(s, 0, ['2S']);
-  assert.equal(play(s, 1, ['JS', 'QD', '4D']).ok, true);
+  assert.equal(play(s, 1, ['JS', 'QS', '4S']).ok, true);
   assert.equal(s.pending, 0);
   assert.equal(s.current, 2);
 });
@@ -248,7 +259,9 @@ test('last cards: any number of cards that could go out together needs a call', 
   const must = (labels) => PU5.mustCallLastCards(PU5.DEFAULT_CONFIG, labels.map(c));
   assert.equal(must(['9D']), true);
   assert.equal(must(['9D', '9C', '10C']), true);
-  assert.equal(must(['10C', '9D', '9C', '8H']), true); // 8♥ 9♣ 9♦ 10♣ ends plain
+  assert.equal(must(['10C', '9D', '9C', '8H']), false); // 8♥ can't sit next to a 9 of another suit
+  assert.equal(must(['10C', '9D', '9C', '6S']), false); // 6♠ fits nowhere
+  assert.equal(must(['10C', '9C', '9D', '10D']), true); // 10♣ 9♣ 9♦ 10♦
   assert.equal(must(['8H', '2C']), false); // no run
   assert.equal(must(['10C', '9D', '9C', '3H']), false);
   assert.equal(must(['QH', '5H']), true); // Q covered by 5♥

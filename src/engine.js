@@ -172,8 +172,10 @@
   // Can `next` follow `prev` within one turn's run?
   function canFollow(config, prev, next, isLast) {
     if (prev.rank === QUEEN) return next.suit === prev.suit || next.rank === QUEEN;
+    // Every card must match the one before it by suit or number, like placing
+    // on the pile: same number in any suit, or same suit one up or down.
     const diff = Math.abs(next.rank - prev.rank);
-    if (diff === 1) return true;
+    if (diff === 1 && next.suit === prev.suit) return true;
     if (diff === 0 && config.sameRankRuns) return true;
     if (next.rank === ACE && isLast && config.aceEndsAnyRun) return true;
     return false;
@@ -206,7 +208,7 @@
         if (cards[i - 1].rank === QUEEN) {
           return fail(`Your ${cardLabel(cards[i - 1])} must be covered by the same suit or another Queen.`);
         }
-        return fail(`${cardLabel(cards[i])} can't follow ${cardLabel(cards[i - 1])}: runs must stay on the same number or go up or down by one.`);
+        return fail(`${cardLabel(cards[i])} can't follow ${cardLabel(cards[i - 1])}: each card must be the same number, or the same suit one up or down.`);
       }
     }
     const last = cards[cards.length - 1];
