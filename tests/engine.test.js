@@ -147,7 +147,7 @@ test('8 skips the next player, K reverses', () => {
 
 test('7 passes hands anticlockwise', () => {
   const s = table({ hands: [['7S', '9D'], ['4D', '4S'], ['4H', '5H', '6H']], top: '5S' });
-  play(s, 0, ['7S']);
+  PU5.playCards(s, 0, ['7S'], undefined, { calledLastCard: true });
   assert.deepEqual(s.players[0].hand.map((x) => x.id), ['4D', '4S']);
   assert.deepEqual(s.players[1].hand.map((x) => x.id), ['4H', '5H', '6H']);
   assert.deepEqual(s.players[2].hand.map((x) => x.id), ['9D']);
@@ -179,7 +179,7 @@ test("can't finish on a power card", () => {
 
 test('the first card played on the dealt card can be a power card (3♣ then Q♣ 4♣)', () => {
   const s = table({ hands: [['QC', '4C', '9D'], ['4D'], ['4H']], top: '3C' });
-  assert.equal(play(s, 0, ['QC', '4C']).ok, true);
+  assert.equal(PU5.playCards(s, 0, ['QC', '4C'], undefined, { calledLastCard: true }).ok, true);
   assert.equal(PU5.topCard(s).id, '4C');
   assert.equal(s.players[0].hand.length, 1);
 });
@@ -218,4 +218,28 @@ test('legalPlays only returns valid runs and AI games finish', () => {
     }
     assert.notEqual(s.winner, null, `seed ${seed} did not finish`);
   }
+});
+
+test('last card: calling it is free, forgetting costs the penalty', () => {
+  const s = table({ hands: [['5S', '6S', '9D'], ['4D'], ['4H']], top: '5H' });
+  assert.equal(play(s, 0, ['5S', '6S'], undefined).ok, true);
+  assert.equal(s.players[0].hand.length, 3); // 1 left + 2 penalty
+
+  const t = table({ hands: [['5S', '6S', '9D'], ['4D'], ['4H']], top: '5H' });
+  assert.equal(PU5.playCards(t, 0, ['5S', '6S'], undefined, { calledLastCard: true }).ok, true);
+  assert.equal(t.players[0].hand.length, 1);
+
+  const u = table({ hands: [['5S', '6S', '9D'], ['4D'], ['4H']], top: '5H', config: { lastCardPenalty: 5 } });
+  u.drawPile = ['3C', '4C', '5C', '6C', '9C', '10C'].map(c);
+  play(u, 0, ['5S', '6S']);
+  assert.equal(u.players[0].hand.length, 6);
+});
+
+test('last card: no call needed when going out or keeping 2+ cards', () => {
+  const s = table({ hands: [['5S', '6S'], ['4D'], ['4H']], top: '5H' });
+  play(s, 0, ['5S', '6S']);
+  assert.equal(s.winner, 0);
+  const t = table({ hands: [['5S', '9D', '9C'], ['4D'], ['4H']], top: '5H' });
+  play(t, 0, ['5S']);
+  assert.equal(t.players[0].hand.length, 2);
 });

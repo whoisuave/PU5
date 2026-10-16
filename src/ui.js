@@ -9,6 +9,7 @@
   let staged = []; // card ids in play order
   let cpuTimer = null;
   let cpuDelay = 850;
+  let calledLastCard = false; // the "Last card!" button is pressed
   let queenWarned = null; // staged run the player was warned about
 
   // ---------- rendering ----------
@@ -38,7 +39,7 @@
       box.className = 'opponent' + (state.current === p.id && state.winner === null ? ' active' : '');
       const backs = Math.min(p.hand.length, 12);
       box.innerHTML =
-        `<div class="name">${p.name}${p.id === state.dealer ? '<span class="tag">DEALER</span>' : ''}</div>` +
+        `<div class="name">${p.name}${p.id === state.dealer ? '<span class="tag">DEALER</span>' : ''}${p.hand.length === 1 ? '<span class="tag last">LAST CARD</span>' : ''}</div>` +
         `<div class="mini-hand">${'<i></i>'.repeat(backs)}</div>` +
         `<div class="count">${p.hand.length} card${p.hand.length === 1 ? '' : 's'}</div>`;
       opp.appendChild(box);
@@ -89,6 +90,7 @@
     $('playBtn').disabled = !myTurn || staged.length === 0;
     $('clearBtn').disabled = staged.length === 0;
     $('hintBtn').disabled = !myTurn;
+    $('lastCardBtn').disabled = !myTurn;
     $('pickupBtn').disabled = !myTurn;
     $('pickupBtn').textContent = state.pending > 0 ? `Pick up ${state.pending}` : 'Pick up';
 
@@ -145,15 +147,24 @@
   }
 
   function commitPlay(suit) {
-    const result = PU5.playCards(state, HUMAN, staged, suit);
+    const result = PU5.playCards(state, HUMAN, staged, suit, { calledLastCard });
     if (!result.ok) return say(result.reason);
     staged = [];
-    say('');
+    setLastCall(false);
+    const forgot = state.log[state.log.length - 1].startsWith(`${state.players[HUMAN].name} didn't call last card`);
+    say(forgot ? `You didn't call last card, so you picked up ${state.config.lastCardPenalty}.` : '');
     afterMove();
+  }
+
+  function setLastCall(on) {
+    calledLastCard = on;
+    $('lastCardBtn').setAttribute('aria-pressed', String(on));
+    $('lastCardBtn').textContent = on ? 'Last card! ✓' : 'Last card!';
   }
 
   function humanPickup() {
     staged = [];
+    setLastCall(false);
     PU5.pickUp(state, HUMAN);
     say('');
     afterMove();
@@ -191,7 +202,7 @@
   function cpuTurn() {
     const seat = state.current;
     const move = PU5AI.chooseMove(state, seat);
-    const res = move.type === 'play' ? PU5.playCards(state, seat, move.cardIds, move.suit) : { ok: false };
+    const res = move.type === 'play' ? PU5.playCards(state, seat, move.cardIds, move.suit, move) : { ok: false };
     if (!res.ok) PU5.pickUp(state, seat);
     staged = staged.filter((id) => state.players[HUMAN].hand.some((c) => c.id === id)); // hands can move on a 7
     say(state.log[state.log.length - 1]);
@@ -213,6 +224,7 @@
       numDecks: Number($('deckInput').value),
       handSize: Number($('handInput').value),
       comboCancel: $('modeInput').value === 'combo',
+      lastCardPenalty: Number($('lastPenaltyInput').value),
     };
     cpuDelay = Number($('speedInput').value);
     const names = ['Kofi', 'Ama', 'Tunde', 'Zara', 'Malik', 'Nia'];
@@ -226,6 +238,7 @@
     }
     $('setupError').textContent = '';
     staged = [];
+    setLastCall(false);
     $('setup').classList.add('hidden');
     $('table').classList.remove('hidden');
     say(state.current === HUMAN ? "You're left of the dealer — you start." : '');
@@ -247,6 +260,7 @@
   $('pickupBtn').onclick = humanPickup;
   $('drawPile').onclick = () => state && state.current === HUMAN && state.winner === null && humanPickup();
   $('hintBtn').onclick = hint;
+  $('lastCardBtn').onclick = () => setLastCall(!calledLastCard);
   $('rulesBtn').onclick = () => $('rulesModal').classList.remove('hidden');
   $('rulesClose').onclick = () => $('rulesModal').classList.add('hidden');
   $('suitCancel').onclick = () => $('suitModal').classList.add('hidden');

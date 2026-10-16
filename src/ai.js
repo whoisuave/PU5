@@ -8,6 +8,8 @@
 })(typeof self !== 'undefined' ? self : this, function (PU5) {
   'use strict';
 
+  const CPU_FORGET_LAST_CARD = 0.15;
+
   function favouriteSuit(hand) {
     const counts = { S: 0, H: 0, D: 0, C: 0 };
     for (const c of hand) if (c.rank !== PU5.ACE) counts[c.suit]++;
@@ -59,6 +61,8 @@
       type: 'play',
       cardIds: best.map((c) => c.id),
       suit: favouriteSuit(remainingHand.length ? remainingHand : best),
+      // CPUs occasionally forget to call last card, like people do.
+      calledLastCard: remainingHand.length === 1 && state.rng() > CPU_FORGET_LAST_CARD,
     };
   }
 

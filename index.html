@@ -35,6 +35,9 @@
     <label>Starting hand size
       <select id="handInput"><option>5</option><option>6</option><option selected>7</option><option>8</option><option>9</option><option>10</option></select>
     </label>
+    <label>Penalty for not calling last card
+      <select id="lastPenaltyInput"><option value="1">Pick up 1</option><option value="2" selected>Pick up 2</option><option value="5">Pick up 5</option></select>
+    </label>
     <label>CPU speed
       <select id="speedInput"><option value="1400">Slow</option><option value="850" selected>Normal</option><option value="350">Fast</option></select>
     </label>
@@ -76,6 +79,7 @@
         <button id="playBtn" class="primary" disabled>Play</button>
         <button id="clearBtn" class="ghost" disabled>Clear</button>
         <button id="pickupBtn" class="warn" disabled>Pick up</button>
+        <button id="lastCardBtn" class="call" aria-pressed="false" disabled>Last card!</button>
         <button id="hintBtn" class="ghost" disabled>Hint</button>
       </div>
     </section>
@@ -117,6 +121,7 @@
         <li><b>K</b>: reverses direction (starts clockwise).</li>
         <li><b>In play</b>: after a 2 or black Jack, the deck is hot. Stack another 2 / black Jack (the total keeps growing), cancel with a red Jack, or pick up the lot. Your run must end on a 2, black Jack or red Jack.</li>
         <li><b>All Saints II mode</b>: you can also cancel with a combo. Start with any pick-up power card and carry on in order, e.g. (red J, 10), (2, 3) or (black J, Q, cover).</li>
+        <li><b>Last card</b>: if your play leaves you with one card, press <b>Last card!</b> before you press Play. Forget, and you pick up the penalty (2 by default).</li>
         <li><b>No power card can start or finish the game.</b> You can't go out on A, 2, 7, 8, J, Q or K. The first card played after the deal can be a power card (on 3♣ you can play Q♣ then 4♣).</li>
         <li>The dealer can't start on a power card, the player left of the dealer goes first, and the dealer reshuffles the play pile (keeping the top card) when the pickup deck runs out.</li>
       </ul>

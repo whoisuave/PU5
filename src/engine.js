@@ -33,6 +33,9 @@
     noFinishOnPowerCard: true,
     // Cards picked up when you can't cover your own Queen.
     queenPenalty: 1,
+    // Last card: a play that leaves you with one card must come with a
+    // "Last card!" call, or you pick up this many.
+    lastCardPenalty: 2,
     // All Saints II: while the deck is in play, a pick-up card followed by an
     // in-order run cancels it, e.g. (red J, 10), (2, 3), (black J, Q, cover).
     // Off = standard All Saints: only a red Jack cancels, so a response run
@@ -229,7 +232,10 @@
    * Play a run. `chosenSuit` is required when the run ends on an Ace.
    * Mutates state and returns { ok, reason? }.
    */
-  function playCards(state, seat, cardIds, chosenSuit) {
+  /*
+   * options.calledLastCard: the player called "Last card!" with this play.
+   */
+  function playCards(state, seat, cardIds, chosenSuit, options = {}) {
     const hand = state.players[seat].hand;
     const cards = cardIds.map((id) => hand.find((c) => c.id === id) || { id, rank: 0, suit: '?' });
     const check = validatePlay(state, seat, cards);
@@ -250,6 +256,15 @@
       state.winner = seat;
       log(state, `${act(player, 'is', 'are')} out of cards and ${player.name === 'You' ? 'win' : 'wins'}! 🎉`);
       return { ok: true };
+    }
+
+    if (player.hand.length === 1) {
+      if (options.calledLastCard) {
+        log(state, `${player.name}: "Last card!"`);
+      } else {
+        const got = drawCards(state, seat, state.config.lastCardPenalty);
+        log(state, `${player.name} didn't call last card and ${player.name === 'You' ? 'pick' : 'picks'} up ${got}.`);
+      }
     }
 
     let skip = 1;
