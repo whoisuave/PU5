@@ -1,0 +1,10 @@
+{
+  "name": "pu5",
+  "version": "1.0.0",
+  "description": "PU5 (BlackJack Pick-Up 5) card game, All Saints Rules",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "build": "node scripts/build-single.js"
+  }
+}

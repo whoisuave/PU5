@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PU5 — Pick Up 5</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>PU5 <span>BlackJack Pick-Up 5</span></h1>
+    <div class="topbar-actions">
+      <button id="rulesBtn" class="ghost">Rules</button>
+      <button id="newGameBtn" class="ghost">New game</button>
+    </div>
+  </header>
+
+  <!-- Setup -->
+  <section id="setup" class="panel setup">
+    <h2>New game</h2>
+    <label>Your name <input id="nameInput" value="You" maxlength="14"></label>
+    <label>CPU opponents
+      <select id="cpuInput"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select>
+    </label>
+    <label>Decks
+      <select id="deckInput"><option value="1" selected>1 (Black Jack = pick up 5)</option><option value="2">2 (Black Jack = pick up hand size)</option></select>
+    </label>
+    <label>Starting hand size
+      <select id="handInput"><option>5</option><option>6</option><option selected>7</option><option>8</option><option>9</option><option>10</option></select>
+    </label>
+    <label>CPU speed
+      <select id="speedInput"><option value="1400">Slow</option><option value="850" selected>Normal</option><option value="350">Fast</option></select>
+    </label>
+    <label class="check"><input type="checkbox" id="sameRankInput"> Allow same number in a run (e.g. 4♠ 4♥)</label>
+    <button id="startBtn" class="primary">Deal</button>
+  </section>
+
+  <!-- Table -->
+  <main id="table" class="table hidden">
+    <div id="opponents" class="opponents"></div>
+
+    <div class="center">
+      <div class="pile-wrap">
+        <div id="drawPile" class="card back" title="Pickup deck"><span id="drawCount"></span></div>
+        <div class="label">Pickup</div>
+      </div>
+      <div class="pile-wrap">
+        <div id="discardTop"></div>
+        <div class="label">Play pile</div>
+      </div>
+      <div class="status">
+        <div id="suitBadge" class="badge"></div>
+        <div id="dirBadge" class="badge"></div>
+        <div id="pendingBadge" class="badge hot hidden"></div>
+      </div>
+    </div>
+
+    <div id="message" class="message"></div>
+
+    <section class="me">
+      <div class="me-head">
+        <strong id="myName"></strong>
+        <span id="turnHint" class="turn-hint"></span>
+      </div>
+      <div id="staging" class="staging"></div>
+      <div id="hand" class="hand"></div>
+      <div class="controls">
+        <button id="playBtn" class="primary" disabled>Play</button>
+        <button id="clearBtn" class="ghost" disabled>Clear</button>
+        <button id="pickupBtn" class="warn" disabled>Pick up</button>
+        <button id="hintBtn" class="ghost" disabled>Hint</button>
+      </div>
+    </section>
+
+    <details class="log-wrap" open>
+      <summary>Game log</summary>
+      <ol id="log" class="log"></ol>
+    </details>
+  </main>
+
+  <!-- Suit picker -->
+  <div id="suitModal" class="modal hidden">
+    <div class="panel">
+      <h3>Ace! Pick the new suit</h3>
+      <div class="suit-choices">
+        <button data-suit="S">♠</button><button data-suit="H" class="red">♥</button>
+        <button data-suit="D" class="red">♦</button><button data-suit="C">♣</button>
+      </div>
+      <button id="suitCancel" class="ghost">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <div id="rulesModal" class="modal hidden">
+    <div class="panel rules">
+      <h3>All Saints Rules</h3>
+      <p>Be the first to run out of cards. Each turn, play one card or a run of cards.</p>
+      <ul>
+        <li>Your first card must match the <b>suit</b> or <b>number/letter</b> on the pile.</li>
+        <li>To play more than one card, each card must go <b>up or down by one</b> from the last (4 → 5 → 4 is fine).</li>
+        <li>Can't (or won't) play? <b>Pick up</b> a card and lose your turn.</li>
+        <li><b>A</b>: play it any time (even at the end of a run) and pick the new suit.</li>
+        <li><b>2</b>: next player picks up 2.</li>
+        <li><b>7</b>: everyone passes their hand anticlockwise.</li>
+        <li><b>8</b>: skip the next player.</li>
+        <li><b>Black J</b>: pick up 5 (with 2 decks: your starting hand size).</li>
+        <li><b>Red J</b>: cancels a pick-up that's in play. Must still match, and you can't finish on it.</li>
+        <li><b>Q</b>: only goes on her suit or another Queen, and must be covered by her suit or another Queen. Can't cover? Pick up a card.</li>
+        <li><b>K</b>: reverses direction (starts clockwise).</li>
+        <li><b>In play</b>: after a 2 or black Jack, the deck is hot. Stack another 2 / black Jack (the total keeps growing), cancel with a red Jack, or pick up the lot. A run that ends on a non-pick-up card (e.g. 2 → 3) also cancels it.</li>
+        <li>The dealer can't start on a power card, the player left of the dealer goes first, and the dealer reshuffles the play pile (keeping the top card) when the pickup deck runs out.</li>
+      </ul>
+      <p class="muted">How to play here: tap cards in the order you want to play them, then press Play. Tap a staged card to put it (and the cards after it) back.</p>
+      <button id="rulesClose" class="primary">Got it</button>
+    </div>
+  </div>
+
+  <script src="src/engine.js"></script>
+  <script src="src/ai.js"></script>
+  <script src="src/ui.js"></script>
+</body>
+</html>
