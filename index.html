@@ -23,6 +23,12 @@
     <label>CPU opponents
       <select id="cpuInput"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select>
     </label>
+    <label>Rules mode
+      <select id="modeInput">
+        <option value="standard" selected>All Saints (only a red Jack cancels)</option>
+        <option value="combo">All Saints II (combos cancel)</option>
+      </select>
+    </label>
     <label>Decks
       <select id="deckInput"><option value="1" selected>1 (Black Jack = pick up 5)</option><option value="2">2 (Black Jack = pick up hand size)</option></select>
     </label>
@@ -54,6 +60,7 @@
         <div id="suitBadge" class="badge"></div>
         <div id="dirBadge" class="badge"></div>
         <div id="pendingBadge" class="badge hot hidden"></div>
+        <div id="modeBadge" class="badge"></div>
       </div>
     </div>
 
@@ -109,7 +116,8 @@
         <li><b>Red J</b>: cancels a pick-up that's in play. Must still match, and you can't finish on it.</li>
         <li><b>Q</b>: only goes on her suit or another Queen, and must be covered by her suit or another Queen. Can't cover? Pick up a card.</li>
         <li><b>K</b>: reverses direction (starts clockwise).</li>
-        <li><b>In play</b>: after a 2 or black Jack, the deck is hot. Stack another 2 / black Jack (the total keeps growing), cancel with a red Jack, or pick up the lot. A run that ends on a non-pick-up card (e.g. 2 → 3) also cancels it.</li>
+        <li><b>In play</b>: after a 2 or black Jack, the deck is hot. Stack another 2 / black Jack (the total keeps growing), cancel with a red Jack, or pick up the lot. Your run must end on a 2, black Jack or red Jack.</li>
+        <li><b>All Saints II mode</b>: you can also cancel with a combo. Start with any pick-up power card and carry on in order, e.g. (red J, 10), (2, 3) or (black J, Q, cover).</li>
         <li>The dealer can't start on a power card, the player left of the dealer goes first, and the dealer reshuffles the play pile (keeping the top card) when the pickup deck runs out.</li>
       </ul>
       <p class="muted">How to play here: tap cards in the order you want to play them, then press Play. Tap a staged card to put it (and the cards after it) back.</p>

@@ -91,8 +91,36 @@ test('black jack is pick up hand-size with more than one deck', () => {
   assert.equal(s.pending, 9);
 });
 
-test('a pick-up card followed by a run card nullifies the stack', () => {
-  const s = table({ hands: [['2S', '9D'], ['JS', '2H', '3H', '8C'], ['4H']], top: '5S' });
+test('standard mode: only a red Jack cancels, so combos are rejected', () => {
+  const s = table({ hands: [['2S', '9D'], ['JH', '10H', '2H', '3H', '2C'], ['4H']], top: '5S' });
+  play(s, 0, ['2S']);
+  s.discard.push(c('2D')); // so the red Jack matches by suit
+  s.activeSuit = 'H';
+  assert.equal(PU5.validatePlay(s, 1, ['2H', '3H'].map(c)).ok, false);
+  assert.equal(PU5.validatePlay(s, 1, ['JH', '10H'].map(c)).ok, false);
+  assert.equal(PU5.validatePlay(s, 1, ['2H', '3H', '2C'].map(c)).ok, true); // still ends hot
+  assert.equal(PU5.validatePlay(s, 1, [c('JH')]).ok, true);
+  assert.ok(PU5.legalPlays(s, 1).every((run) => ['2H', '2C', 'JH'].includes(run[run.length - 1].id)));
+});
+
+test('All Saints II: red J + 10 combo cancels', () => {
+  const s = table({ hands: [['2H', '9D'], ['JH', '10S', '5D'], ['4H']], top: '5H', config: { comboCancel: true } });
+  play(s, 0, ['2H']);
+  assert.equal(play(s, 1, ['JH', '10S']).ok, true);
+  assert.equal(s.pending, 0);
+  assert.equal(s.activeSuit, 'S');
+});
+
+test('All Saints II: black J, Q, cover combo cancels', () => {
+  const s = table({ hands: [['2S', '9D'], ['JS', 'QD', '4D', '8C'], ['4H']], top: '5S', config: { comboCancel: true } });
+  play(s, 0, ['2S']);
+  assert.equal(play(s, 1, ['JS', 'QD', '4D']).ok, true);
+  assert.equal(s.pending, 0);
+  assert.equal(s.current, 2);
+});
+
+test('All Saints II: a pick-up card followed by a run card nullifies the stack', () => {
+  const s = table({ hands: [['2S', '9D'], ['JS', '2H', '3H', '8C'], ['4H']], top: '5S', config: { comboCancel: true } });
   play(s, 0, ['2S']);
   assert.equal(play(s, 1, ['2H', '3H']).ok, true);
   assert.equal(s.pending, 0);
@@ -153,7 +181,7 @@ test('reshuffle keeps the top card', () => {
 test('legalPlays only returns valid runs and AI games finish', () => {
   for (let seed = 1; seed <= 40; seed++) {
     const players = [0, 1, 2, 3].map((i) => ({ name: `CPU${i}` }));
-    const s = PU5.createGame(players, { numDecks: seed % 2 ? 1 : 2 }, { seed });
+    const s = PU5.createGame(players, { numDecks: seed % 2 ? 1 : 2, comboCancel: seed % 4 < 2 }, { seed });
     let turns = 0;
     while (s.winner === null && turns < 3000) {
       const seat = s.current;

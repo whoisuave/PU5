@@ -54,6 +54,7 @@
     $('dirBadge').textContent = state.direction === 1 ? '↻ Clockwise' : '↺ Anticlockwise';
     $('pendingBadge').classList.toggle('hidden', state.pending === 0);
     $('pendingBadge').textContent = `🔥 IN PLAY: ${state.pending}`;
+    $('modeBadge').textContent = state.config.comboCancel ? 'All Saints II' : 'All Saints';
 
     // Me
     document.querySelector('.me').classList.toggle('active', myTurn);
@@ -161,7 +162,7 @@
   function hint() {
     const move = PU5AI.chooseMove(state, HUMAN);
     if (move.type === 'pickup') {
-      say(state.pending > 0 ? `Nothing to stack or cancel with — pick up ${state.pending}.` : 'No good play — pick up a card.');
+      say(state.pending > 0 ? `Nothing to stack or cancel with. Pick up ${state.pending}.` : 'No good play. Pick up a card.');
       return;
     }
     staged = move.cardIds.slice();
@@ -212,6 +213,7 @@
       numDecks: Number($('deckInput').value),
       handSize: Number($('handInput').value),
       sameRankRuns: $('sameRankInput').checked,
+      comboCancel: $('modeInput').value === 'combo',
     };
     cpuDelay = Number($('speedInput').value);
     const names = ['Kofi', 'Ama', 'Tunde', 'Zara', 'Malik', 'Nia'];

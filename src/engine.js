@@ -33,6 +33,11 @@
     noFinishOnRedJack: true,
     // Cards picked up when you can't cover your own Queen.
     queenPenalty: 1,
+    // All Saints II: while the deck is in play, a pick-up card followed by an
+    // in-order run cancels it, e.g. (red J, 10), (2, 3), (black J, Q, cover).
+    // Off = standard All Saints: only a red Jack cancels, so a response run
+    // must end on a 2, black Jack or red Jack.
+    comboCancel: false,
   };
 
   const isRed = (c) => c.suit === 'H' || c.suit === 'D';
@@ -201,7 +206,16 @@
       }
     }
     const last = cards[cards.length - 1];
-    if (state.config.noFinishOnRedJack && cards.length === hand.length && isRedJack(last)) {
+    return checkEnding(state, cards, hand.length);
+  }
+
+  // Rules about how a run may end, shared by validatePlay and legalPlays.
+  function checkEnding(state, cards, handLength) {
+    const last = cards[cards.length - 1];
+    if (state.pending > 0 && !state.config.comboCancel && !isPickupCard(last) && !isRedJack(last)) {
+      return fail('Only a red Jack cancels in this mode: end your run on a 2, black Jack or red Jack, or pick up.');
+    }
+    if (state.config.noFinishOnRedJack && cards.length === handLength && isRedJack(last)) {
       return fail("You can't finish on a red Jack.");
     }
     return { ok: true };
@@ -244,7 +258,7 @@
       log(state, `In play! Next player picks up ${state.pending} unless they stack or cancel.`);
     } else if (wasInPlay) {
       state.pending = 0;
-      log(state, isRedJack(last) && cards.length === 1 ? 'Red Jack cancels the pick-up.' : 'The pick-up is cancelled.');
+      log(state, isRedJack(last) ? 'Red Jack cancels the pick-up.' : 'Combo! The pick-up is cancelled.');
     }
 
     switch (last.rank) {
@@ -329,8 +343,7 @@
     const cfg = state.config;
 
     function finish(run) {
-      if (cfg.noFinishOnRedJack && run.length === hand.length && isRedJack(run[run.length - 1])) return;
-      results.push(run.slice());
+      if (checkEnding(state, run, hand.length).ok) results.push(run.slice());
     }
 
     function extend(run, used) {

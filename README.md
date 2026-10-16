@@ -29,16 +29,23 @@ Run `npm run build` to make `dist/pu5.html`, a single file that holds the whole 
 
 - **Matching:** the first card you play must match the suit (or the suit an Ace called) or the number/letter on the pile.
 - **Runs:** after the first card, each card must go up or down by one from the card before it, e.g. 4 → 5 → 4 → 3. A covering Queen is the one exception.
-- **In play:** after a 2 or black Jack, the deck is hot. The next player must either stack a 2 or black Jack (the total keeps growing, so 2 then black Jack means pick up 7), cancel with a red Jack, or pick up the whole stack. A response run that ends on a card that isn't a pick-up card (e.g. 2 → 3) also cancels the stack.
+- **In play:** after a 2 or black Jack, the deck is hot. The next player must either stack a 2 or black Jack (the total keeps growing, so 2 then black Jack means pick up 7), cancel with a red Jack, or pick up the whole stack. A response run must end on a 2, black Jack or red Jack.
 - **Can't play:** pick up one card and lose your turn.
 - **Setup:** the dealer is random. The player to the dealer's left starts. If the starting card is a power card, it is buried at a random spot in the pickup deck and a new card is turned over.
 - **Reshuffle:** when the pickup deck runs out, the dealer keeps the top card of the play pile and shuffles the rest back into the pickup deck.
+
+### Rules modes
+
+Pick the mode on the setup screen.
+
+- **All Saints:** the standard rules. Only a red Jack cancels a pick-up that's in play.
+- **All Saints II:** you can also cancel with a combo. Start with any pick-up power card (2, black Jack or red Jack) and carry on with a run in order. Examples: (red J, 10), (2, 3), (black J, Q, cover). The first card must still match the pile. This is `comboCancel` in `DEFAULT_CONFIG`.
 
 ### How some rules were read
 
 These parts of the written rules could be read more than one way. Each one is a single setting in `DEFAULT_CONFIG` in `src/engine.js`, or a small code change.
 
-- **Only the last card of a run takes effect.** For example, 8 → 7 → 8 skips one player, and 2 → 3 cancels the pick-up. This follows "play any pick up card then a card that can orderly be placed after it… the effects are nullified".
+- **Only the last card of a run takes effect.** For example, 8 → 7 → 8 skips one player, and in All Saints II, 2 → 3 cancels the pick-up.
 - **Red Jack must still match the pile.** It isn't wild ("so long as… the syntax is correct"), and you can't finish on it (`noFinishOnRedJack`).
 - **Same number in a run is off by default.** You can turn on 4♠ 4♥ in the setup screen (`sameRankRuns`).
 - **An Ace can end any run.** For example, 5 → 6 → A (`aceEndsAnyRun`).
