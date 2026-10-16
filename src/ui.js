@@ -9,7 +9,7 @@
   let staged = []; // card ids in play order
   let cpuTimer = null;
   let cpuDelay = 850;
-  let calledLastCard = false; // the "Last card!" button is pressed
+  let calledLastCard = false; // the "Last cards!" button is pressed
   let queenWarned = null; // staged run the player was warned about
 
   // ---------- rendering ----------
@@ -39,7 +39,7 @@
       box.className = 'opponent' + (state.current === p.id && state.winner === null ? ' active' : '');
       const backs = Math.min(p.hand.length, 12);
       box.innerHTML =
-        `<div class="name">${p.name}${p.id === state.dealer ? '<span class="tag">DEALER</span>' : ''}${p.hand.length === 1 ? '<span class="tag last">LAST CARD</span>' : ''}</div>` +
+        `<div class="name">${p.name}${p.id === state.dealer ? '<span class="tag">DEALER</span>' : ''}${p.calledLast ? '<span class="tag last">LAST CARDS</span>' : ''}</div>` +
         `<div class="mini-hand">${'<i></i>'.repeat(backs)}</div>` +
         `<div class="count">${p.hand.length} card${p.hand.length === 1 ? '' : 's'}</div>`;
       opp.appendChild(box);
@@ -151,15 +151,15 @@
     if (!result.ok) return say(result.reason);
     staged = [];
     setLastCall(false);
-    const forgot = state.log[state.log.length - 1].startsWith(`${state.players[HUMAN].name} didn't call last card`);
-    say(forgot ? `You didn't call last card, so you picked up ${state.config.lastCardPenalty}.` : '');
+    const forgot = state.log.slice(-4).some((l) => l.startsWith(`${state.players[HUMAN].name} didn't call last cards`));
+    say(forgot ? `You could go out next turn but didn't call last cards, so you picked up ${state.config.lastCardPenalty}.` : '');
     afterMove();
   }
 
   function setLastCall(on) {
     calledLastCard = on;
     $('lastCardBtn').setAttribute('aria-pressed', String(on));
-    $('lastCardBtn').textContent = on ? 'Last card! ✓' : 'Last card!';
+    $('lastCardBtn').textContent = on ? 'Last cards! ✓' : 'Last cards!';
   }
 
   function humanPickup() {

@@ -33,8 +33,9 @@
     noFinishOnPowerCard: true,
     // Cards picked up when you can't cover your own Queen.
     queenPenalty: 1,
-    // Last card: a play that leaves you with one card must come with a
-    // "Last card!" call, or you pick up this many.
+    // Last cards: a play that leaves you holding cards you could all put down
+    // in one go next turn (any number of them) must come with a "Last cards!"
+    // call, or you pick up this many.
     lastCardPenalty: 2,
     // All Saints II: while the deck is in play, a pick-up card followed by an
     // in-order run cancels it, e.g. (red J, 10), (2, 3), (black J, Q, cover).
@@ -233,7 +234,7 @@
    * Mutates state and returns { ok, reason? }.
    */
   /*
-   * options.calledLastCard: the player called "Last card!" with this play.
+   * options.calledLastCard: the player called "Last cards!" with this play.
    */
   function playCards(state, seat, cardIds, chosenSuit, options = {}) {
     const hand = state.players[seat].hand;
@@ -244,6 +245,7 @@
     if (last.rank === ACE && !SUITS.includes(chosenSuit)) return fail('Choose a suit for your Ace.');
 
     const player = state.players[seat];
+    player.calledLast = false;
     player.hand = hand.filter((c) => !cardIds.includes(c.id));
     state.discard.push(...cards);
     log(state, `${act(player, 'plays', 'play')} ${cards.map(cardLabel).join(' ')}.`);
@@ -258,12 +260,13 @@
       return { ok: true };
     }
 
-    if (player.hand.length === 1) {
+    if (mustCallLastCards(state.config, player.hand)) {
       if (options.calledLastCard) {
-        log(state, `${player.name}: "Last card!"`);
+        player.calledLast = true;
+        log(state, `${player.name}: "Last cards!"`);
       } else {
         const got = drawCards(state, seat, state.config.lastCardPenalty);
-        log(state, `${player.name} didn't call last card and ${player.name === 'You' ? 'pick' : 'picks'} up ${got}.`);
+        log(state, `${player.name} didn't call last cards and ${player.name === 'You' ? 'pick' : 'picks'} up ${got}.`);
       }
     }
 
@@ -306,7 +309,36 @@
     const hands = state.players.map((p) => p.hand);
     for (let i = 0; i < n; i++) {
       state.players[(i - 1 + n) % n].hand = hands[i];
+      state.players[i].calledLast = false;
     }
+  }
+
+  /*
+   * Could this hand all go down in one run and finish the game? The pile isn't
+   * known yet, so any first card counts. Used for the "Last cards!" call.
+   */
+  function mustCallLastCards(config, hand) {
+    const n = hand.length;
+    if (n === 0 || n > 20) return false;
+    const full = (1 << n) - 1;
+    const dead = new Set(); // mask*32+last states that can't finish
+    function canEnd(c) {
+      return !(config.noFinishOnPowerCard && isPowerCard(c));
+    }
+    function search(mask, last) {
+      if (mask === full) return canEnd(hand[last]);
+      const key = mask * 32 + last;
+      if (dead.has(key)) return false;
+      for (let i = 0; i < n; i++) {
+        if (mask & (1 << i)) continue;
+        const isFinal = (mask | (1 << i)) === full;
+        if (canFollow(config, hand[last], hand[i], isFinal) && search(mask | (1 << i), i)) return true;
+      }
+      dead.add(key);
+      return false;
+    }
+    for (let i = 0; i < n; i++) if (search(1 << i, i)) return true;
+    return false;
   }
 
   // Keep the top card; shuffle the rest of the play pile into the pickup deck.
@@ -337,6 +369,7 @@
     if (state.winner !== null) return fail('The game is over.');
     if (seat !== state.current) return fail("It's not your turn.");
     const player = state.players[seat];
+    player.calledLast = false;
     if (state.pending > 0) {
       const got = drawCards(state, seat, state.pending);
       log(state, `${act(player, 'picks', 'pick')} up ${got}.`);
@@ -393,6 +426,6 @@
     cardLabel, pickupValue, blackJackPenalty,
     makeRng, shuffle, buildDeck,
     createGame, topCard, nextSeat, canStart, canFollow,
-    validatePlay, playCards, pickUp, legalPlays, reshuffle, rotateHands,
+    validatePlay, playCards, pickUp, legalPlays, reshuffle, rotateHands, mustCallLastCards,
   };
 });

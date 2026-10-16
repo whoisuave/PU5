@@ -61,8 +61,8 @@
       type: 'play',
       cardIds: best.map((c) => c.id),
       suit: favouriteSuit(remainingHand.length ? remainingHand : best),
-      // CPUs occasionally forget to call last card, like people do.
-      calledLastCard: remainingHand.length === 1 && state.rng() > CPU_FORGET_LAST_CARD,
+      // CPUs occasionally forget to call last cards, like people do.
+      calledLastCard: PU5.mustCallLastCards(state.config, remainingHand) && state.rng() > CPU_FORGET_LAST_CARD,
     };
   }
 

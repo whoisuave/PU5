@@ -235,11 +235,31 @@ test('last card: calling it is free, forgetting costs the penalty', () => {
   assert.equal(u.players[0].hand.length, 6);
 });
 
-test('last card: no call needed when going out or keeping 2+ cards', () => {
+test('last cards: no call needed when going out or when the rest is no single run', () => {
   const s = table({ hands: [['5S', '6S'], ['4D'], ['4H']], top: '5H' });
   play(s, 0, ['5S', '6S']);
   assert.equal(s.winner, 0);
-  const t = table({ hands: [['5S', '9D', '9C'], ['4D'], ['4H']], top: '5H' });
+  const t = table({ hands: [['5S', '9D', '3C'], ['4D'], ['4H']], top: '5H' });
   play(t, 0, ['5S']);
   assert.equal(t.players[0].hand.length, 2);
+});
+
+test('last cards: any number of cards that could go out together needs a call', () => {
+  const must = (labels) => PU5.mustCallLastCards(PU5.DEFAULT_CONFIG, labels.map(c));
+  assert.equal(must(['9D']), true);
+  assert.equal(must(['9D', '9C', '10C']), true);
+  assert.equal(must(['10C', '9D', '9C', '8H']), true); // 8♥ 9♣ 9♦ 10♣ ends plain
+  assert.equal(must(['8H', '2C']), false); // no run
+  assert.equal(must(['10C', '9D', '9C', '3H']), false);
+  assert.equal(must(['QH', '5H']), true); // Q covered by 5♥
+  assert.equal(must(['8C']), false); // can't go out on a power card
+  assert.equal(must(['6S', '7S']), true); // 7 → 6 ends plain
+
+  const s = table({ hands: [['5S', '9D', '9C', '10C'], ['4D'], ['4H']], top: '5H' });
+  play(s, 0, ['5S']);
+  assert.equal(s.players[0].hand.length, 5); // 3 left + 2 penalty
+  const t = table({ hands: [['5S', '9D', '9C', '10C'], ['4D'], ['4H']], top: '5H' });
+  PU5.playCards(t, 0, ['5S'], undefined, { calledLastCard: true });
+  assert.equal(t.players[0].hand.length, 3);
+  assert.equal(t.players[0].calledLast, true);
 });
