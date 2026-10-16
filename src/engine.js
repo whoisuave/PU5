@@ -29,8 +29,8 @@
     sameRankRuns: true,
     // An Ace may end any run ("Ace can be put down at any time").
     aceEndsAnyRun: true,
-    // You can't go out on a red Jack.
-    noFinishOnRedJack: true,
+    // You can't go out on a power card (A, 2, 7, 8, J, Q, K).
+    noFinishOnPowerCard: true,
     // Cards picked up when you can't cover your own Queen.
     queenPenalty: 1,
     // All Saints II: while the deck is in play, a pick-up card followed by an
@@ -215,8 +215,8 @@
     if (state.pending > 0 && !state.config.comboCancel && !isPickupCard(last) && !isRedJack(last)) {
       return fail('Only a red Jack cancels in this mode: end your run on a 2, black Jack or red Jack, or pick up.');
     }
-    if (state.config.noFinishOnRedJack && cards.length === handLength && isRedJack(last)) {
-      return fail("You can't finish on a red Jack.");
+    if (state.config.noFinishOnPowerCard && cards.length === handLength && isPowerCard(last)) {
+      return fail(`You can't finish on a power card (${cardLabel(last)}). End on a plain card or pick up.`);
     }
     return { ok: true };
   }

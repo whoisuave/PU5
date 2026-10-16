@@ -23,7 +23,7 @@ Run `npm run build` to make `dist/pu5.html`, a single file that holds the whole 
 | **7** | Everyone passes their hand anticlockwise. |
 | **8** | Skips the next player. |
 | **Black J** | The next player picks up 5. With more than one deck, they pick up the starting hand size instead. |
-| **Red J** | Cancels a pick-up that's in play. It still has to match the pile, and you can't go out on it. |
+| **Red J** | Cancels a pick-up that's in play. It still has to match the pile. |
 | **Q** | Only goes on her own suit or another Queen. She must be covered by her suit or another Queen. If you can't cover her, you pick up 1. |
 | **K** | Reverses direction. Play starts clockwise. |
 
@@ -31,6 +31,7 @@ Run `npm run build` to make `dist/pu5.html`, a single file that holds the whole 
 - **Runs:** after the first card, each card must be the same number as the card before it or go up or down by one. Suits don't matter, e.g. 5♦ → 5♠ → 5♣ → 6♣, or 4 → 5 → 4 → 3. A covering Queen is the one exception.
 - **In play:** after a 2 or black Jack, the deck is hot. The next player must either stack a 2 or black Jack (the total keeps growing, so 2 then black Jack means pick up 7), cancel with a red Jack, or pick up the whole stack. A response run must end on a 2, black Jack or red Jack.
 - **Can't play:** pick up one card and lose your turn.
+- **Power cards can't start or finish the game:** the dealt starting card is never a power card, and you can't go out on one (A, 2, 7, 8, J, Q, K). A power card in the middle of your last run is fine. The first card played after the deal can be a power card, e.g. on 3♣ you can play Q♣ then 4♣ (`noFinishOnPowerCard`).
 - **Setup:** the dealer is random. The player to the dealer's left starts. If the starting card is a power card, it is buried at a random spot in the pickup deck and a new card is turned over.
 - **Reshuffle:** when the pickup deck runs out, the dealer keeps the top card of the play pile and shuffles the rest back into the pickup deck.
 
@@ -46,9 +47,9 @@ Pick the mode on the setup screen.
 These parts of the written rules could be read more than one way. Each one is a single setting in `DEFAULT_CONFIG` in `src/engine.js`, or a small code change.
 
 - **Only the last card of a run takes effect.** For example, 8 → 7 → 8 skips one player, and in All Saints II, 2 → 3 cancels the pick-up.
-- **Red Jack must still match the pile.** It isn't wild ("so long as… the syntax is correct"), and you can't finish on it (`noFinishOnRedJack`).
+- **Red Jack must still match the pile.** It isn't wild ("so long as… the syntax is correct").
 - **An Ace can end any run.** For example, 5 → 6 → A (`aceEndsAnyRun`).
-- **An uncovered Queen costs 1 card** (`queenPenalty`). Your turn then ends, so you can never go out on a Queen.
+- **An uncovered Queen costs 1 card** (`queenPenalty`). Your turn then ends.
 - **With 2 players, K only flips direction.** It has no extra skip effect.
 
 ## Adding rules

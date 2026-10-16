@@ -165,9 +165,23 @@ test('queen must be played on her suit or a queen, and covered', () => {
   assert.equal(s.players[0].hand.length, 4);
 });
 
-test("can't finish on a red jack", () => {
-  const s = table({ hands: [['JH'], ['4D'], ['4H']], top: '5H' });
-  assert.equal(PU5.validatePlay(s, 0, [c('JH')]).ok, false);
+test("can't finish on a power card", () => {
+  for (const last of ['JH', 'JS', 'AH', '2H', '7H', '8H', 'KH', 'QH']) {
+    const s = table({ hands: [[last], ['4D'], ['4H']], top: '5H' });
+    assert.equal(PU5.validatePlay(s, 0, [c(last)]).ok, false, last);
+    assert.equal(PU5.legalPlays(s, 0).length, 0, last);
+  }
+  // A power card is fine mid-run as long as the run ends on a plain card.
+  const s = table({ hands: [['8H', '9H'], ['4D'], ['4H']], top: '5H' });
+  assert.equal(play(s, 0, ['8H', '9H']).ok, true);
+  assert.equal(s.winner, 0);
+});
+
+test('the first card played on the dealt card can be a power card (3♣ then Q♣ 4♣)', () => {
+  const s = table({ hands: [['QC', '4C', '9D'], ['4D'], ['4H']], top: '3C' });
+  assert.equal(play(s, 0, ['QC', '4C']).ok, true);
+  assert.equal(PU5.topCard(s).id, '4C');
+  assert.equal(s.players[0].hand.length, 1);
 });
 
 test('playing your last card wins', () => {
