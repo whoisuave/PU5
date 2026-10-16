@@ -25,8 +25,8 @@
   const DEFAULT_CONFIG = {
     numDecks: 1,
     handSize: 7,
-    // Allow a run to repeat the same rank (e.g. 4♠ 4♥) as well as step ±1.
-    sameRankRuns: false,
+    // A run may repeat the same number in any suit (5♦ 5♠ 5♣ 6♣) as well as step ±1.
+    sameRankRuns: true,
     // An Ace may end any run ("Ace can be put down at any time").
     aceEndsAnyRun: true,
     // You can't go out on a red Jack.
@@ -202,7 +202,7 @@
         if (cards[i - 1].rank === QUEEN) {
           return fail(`Your ${cardLabel(cards[i - 1])} must be covered by the same suit or another Queen.`);
         }
-        return fail(`${cardLabel(cards[i])} can't follow ${cardLabel(cards[i - 1])}: runs must go up or down in order.`);
+        return fail(`${cardLabel(cards[i])} can't follow ${cardLabel(cards[i - 1])}: runs must stay on the same number or go up or down by one.`);
       }
     }
     const last = cards[cards.length - 1];

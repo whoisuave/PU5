@@ -28,7 +28,7 @@ Run `npm run build` to make `dist/pu5.html`, a single file that holds the whole 
 | **K** | Reverses direction. Play starts clockwise. |
 
 - **Matching:** the first card you play must match the suit (or the suit an Ace called) or the number/letter on the pile.
-- **Runs:** after the first card, each card must go up or down by one from the card before it, e.g. 4 → 5 → 4 → 3. A covering Queen is the one exception.
+- **Runs:** after the first card, each card must be the same number as the card before it or go up or down by one. Suits don't matter, e.g. 5♦ → 5♠ → 5♣ → 6♣, or 4 → 5 → 4 → 3. A covering Queen is the one exception.
 - **In play:** after a 2 or black Jack, the deck is hot. The next player must either stack a 2 or black Jack (the total keeps growing, so 2 then black Jack means pick up 7), cancel with a red Jack, or pick up the whole stack. A response run must end on a 2, black Jack or red Jack.
 - **Can't play:** pick up one card and lose your turn.
 - **Setup:** the dealer is random. The player to the dealer's left starts. If the starting card is a power card, it is buried at a random spot in the pickup deck and a new card is turned over.
@@ -47,7 +47,6 @@ These parts of the written rules could be read more than one way. Each one is a 
 
 - **Only the last card of a run takes effect.** For example, 8 → 7 → 8 skips one player, and in All Saints II, 2 → 3 cancels the pick-up.
 - **Red Jack must still match the pile.** It isn't wild ("so long as… the syntax is correct"), and you can't finish on it (`noFinishOnRedJack`).
-- **Same number in a run is off by default.** You can turn on 4♠ 4♥ in the setup screen (`sameRankRuns`).
 - **An Ace can end any run.** For example, 5 → 6 → A (`aceEndsAnyRun`).
 - **An uncovered Queen costs 1 card** (`queenPenalty`). Your turn then ends, so you can never go out on a Queen.
 - **With 2 players, K only flips direction.** It has no extra skip effect.

@@ -212,7 +212,6 @@
     const config = {
       numDecks: Number($('deckInput').value),
       handSize: Number($('handInput').value),
-      sameRankRuns: $('sameRankInput').checked,
       comboCancel: $('modeInput').value === 'combo',
     };
     cpuDelay = Number($('speedInput').value);

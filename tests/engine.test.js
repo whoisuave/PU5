@@ -46,9 +46,16 @@ test('runs go up/down in order and may change direction (4,5,4)', () => {
   assert.equal(PU5.validatePlay(s, 0, ['4S', '5H', '4D'].map(c)).ok, true);
   assert.equal(PU5.validatePlay(s, 0, ['4S', '5H', '6C'].map(c)).ok, true);
   assert.equal(PU5.validatePlay(s, 0, ['4S', '9C'].map(c)).ok, false);
+  s.config.sameRankRuns = false;
   assert.equal(PU5.validatePlay(s, 0, ['4S', '4D'].map(c)).ok, false);
-  s.config.sameRankRuns = true;
-  assert.equal(PU5.validatePlay(s, 0, ['4S', '4D'].map(c)).ok, true);
+});
+
+test('same number in any suit continues a run (5♦ 5♠ 5♣ 6♣)', () => {
+  const s = table({ hands: [['5S', '5C', '6C', '6H', '9D'], ['4C'], ['4C1']], top: '5D' });
+  assert.equal(PU5.validatePlay(s, 0, ['5S', '5C', '6C'].map(c)).ok, true);
+  assert.equal(PU5.validatePlay(s, 0, ['5S', '5C', '6C', '6H'].map(c)).ok, true);
+  assert.equal(play(s, 0, ['5S', '5C', '6C', '6H']).ok, true);
+  assert.equal(s.activeSuit, 'H');
 });
 
 test('ace can be played any time and changes the suit', () => {

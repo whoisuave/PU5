@@ -38,7 +38,6 @@
     <label>CPU speed
       <select id="speedInput"><option value="1400">Slow</option><option value="850" selected>Normal</option><option value="350">Fast</option></select>
     </label>
-    <label class="check"><input type="checkbox" id="sameRankInput"> Allow same number in a run (e.g. 4♠ 4♥)</label>
     <p id="setupError" class="error" role="alert"></p>
     <button id="startBtn" class="primary">Deal</button>
   </section>
@@ -106,7 +105,7 @@
       <p>Be the first to run out of cards. Each turn, play one card or a run of cards.</p>
       <ul>
         <li>Your first card must match the <b>suit</b> or <b>number/letter</b> on the pile.</li>
-        <li>To play more than one card, each card must go <b>up or down by one</b> from the last (4 → 5 → 4 is fine).</li>
+        <li>To play more than one card, each card must be the <b>same number</b> or go <b>up or down by one</b> from the last. Suits don't matter (5♦ → 5♠ → 5♣ → 6♣, or 4 → 5 → 4).</li>
         <li>Can't (or won't) play? <b>Pick up</b> a card and lose your turn.</li>
         <li><b>A</b>: play it any time (even at the end of a run) and pick the new suit.</li>
         <li><b>2</b>: next player picks up 2.</li>
